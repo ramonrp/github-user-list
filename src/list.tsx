@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, generatePath } from "react-router-dom";
+import { Link, generatePath, useLocation } from "react-router-dom";
 
 interface MemberEntity {
   id: string;
@@ -13,8 +13,11 @@ const getMembers = (organization) => {
   );
 };
 export const ListPage: React.FC = () => {
+  const location = useLocation();
+  const initialInput = location.state?.inputOrganization || "lemoncode";
   const [members, setMembers] = React.useState<MemberEntity[]>([]);
-  const [inputOrganization, setInputOrganization] = React.useState("lemoncode");
+  const [inputOrganization, setInputOrganization] =
+    React.useState(initialInput);
 
   React.useEffect(() => {
     getMembers(inputOrganization).then(setMembers);
@@ -55,7 +58,10 @@ export const ListPage: React.FC = () => {
                 <span>{member.id}</span>
               </td>
               <td>
-                <Link to={generatePath("/detail/:id", { id: member.login })}>
+                <Link
+                  to={generatePath("/detail/:id", { id: member.login })}
+                  state={{ inputOrganization }}
+                >
                   {member.login}
                 </Link>
               </td>

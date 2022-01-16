@@ -1,35 +1,27 @@
 import React from "react";
-import { Link, generatePath, useLocation } from "react-router-dom";
-
-interface MemberEntity {
-  id: string;
-  login: string;
-  avatar_url: string;
-}
-
+import { Link, generatePath } from "react-router-dom";
+import { MemberEntity } from "./entityModel";
+import { useListContext } from "./contexList";
+import { LoaderOptionsPlugin } from "webpack";
 const getMembers = (organization) => {
   return fetch(`https://api.github.com/orgs/${organization}/members`).then(
     (response) => response.json()
   );
 };
 export const ListPage: React.FC = () => {
-  const location = useLocation();
-  const initialInput = location.state?.inputOrganization || "lemoncode";
-  const [members, setMembers] = React.useState<MemberEntity[]>([]);
-  const [inputOrganization, setInputOrganization] =
-    React.useState(initialInput);
+  const { input, setInput, list, setList } = useListContext();
 
   React.useEffect(() => {
-    getMembers(inputOrganization).then(setMembers);
+    getMembers(input).then(setList);
   }, []);
 
   const handleChange = (e) => {
-    setInputOrganization(e.target.value);
+    setInput(e.target.value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    getMembers(inputOrganization).then(setMembers);
+    getMembers(input).then(setList);
   };
 
   return (
@@ -37,7 +29,7 @@ export const ListPage: React.FC = () => {
       <h2>Hello from List page</h2>
       <form onSubmit={handleSubmit}>
         <label>Organization</label>
-        <input onChange={handleChange} value={inputOrganization}></input>
+        <input onChange={handleChange} value={input}></input>
         <button>Search</button>
       </form>
       <table className="table">
@@ -49,8 +41,8 @@ export const ListPage: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {members.map((member) => (
-            <tr>
+          {list?.map((member) => (
+            <tr key={member.id}>
               <td>
                 <img src={member.avatar_url} style={{ width: "5rem" }} />
               </td>
@@ -58,10 +50,7 @@ export const ListPage: React.FC = () => {
                 <span>{member.id}</span>
               </td>
               <td>
-                <Link
-                  to={generatePath("/detail/:id", { id: member.login })}
-                  state={{ inputOrganization }}
-                >
+                <Link to={generatePath("/detail/:id", { id: member.login })}>
                   {member.login}
                 </Link>
               </td>
